@@ -1,0 +1,47 @@
+﻿<TableSpec 
+	xmlns="bb_appfx_table"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="9b881978-f7e6-46a2-b634-6a26440db2f8"
+	Name="Revenue Category By Appeal Code Forecast"
+	Description="Stores information about revenue category by appeal code forecast."
+	Author="Abel C. Debela"
+	Tablename="USR_REVENUECATEGORYBYAPPEALCODEFORECAST"		   
+	IsBuiltIn="false"
+	>
+
+	<!-- define fields on the table -->
+	<Fields>
+    <ForeignKeyField Description="GL Fiscal Year Id" Name="GLFISCALYEARID" ForeignTable="GLFISCALYEAR" />
+    <ForeignKeyField Description="Apeal Category Code" Name="APPEALCATEGORYCODEID" ForeignTable="APPEALCATEGORYCODE" />
+    <NumberField Description="Forcast month" Name="MONTHID" Type="tinyint" />
+    <MoneyField Description="Expected total gift amount." Name="EXPECTEDTOTALGIFTAMOUNT" />
+	</Fields>
+
+	<!-- define any additional check constraints on the table -->
+
+
+	<!-- define any indexes on the table -->
+	<Indexes>
+    <Index>
+      <IndexFields>
+        <IndexField Name="ID" />
+      </IndexFields>
+      <IncludeFields>
+        <IncludeField Name="GLFISCALYEARID" />
+        <IncludeField Name="APPEALCATEGORYCODEID" />
+        <IncludeField Name="MONTHID"/>
+      </IncludeFields>
+    </Index>
+    <Index IsUnique="true">
+      <IndexFields>
+        <IndexField Name="GLFISCALYEARID" />
+        <IndexField Name="APPEALCATEGORYCODEID" />
+        <IndexField Name="MONTHID"/>
+      </IndexFields>
+    </Index>
+	</Indexes>
+		
+	<!-- define any triggers on the table -->
+
+
+</TableSpec>

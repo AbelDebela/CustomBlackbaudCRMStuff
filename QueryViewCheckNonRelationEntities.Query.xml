@@ -1,0 +1,40 @@
+﻿<QueryViewSpec
+	xmlns="bb_appfx_queryview"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="315d4359-935e-4e01-98c6-b2b535adcdd1"
+	Name="Query View Check Non Relation Entities Query"
+	Description="A view defined for querying on query view check non relation entities records"
+	Author="Abel C. Debela"
+	IsRoot="true"
+	PrimaryKeyField="ID"
+	RecordType="Query View Check Non Relation Entities"
+	c:SecurityUIFolder="Query View Check Non Relation Entities"
+	>
+
+	<!-- define the view used to return data for the query -->
+	<ViewImplementation ViewName="USR_V_QUERY_CONSTITUENT_EVENT">
+		<ViewSQL>
+			<![CDATA[
+select
+	ID,
+	KEYNAME
+from dbo.CONSTITUENT
+			]]>
+		</ViewSQL>
+	</ViewImplementation>
+
+	<!-- describe each field in the view output -->
+	<Output>
+		<OutputFields>
+			<OutputField Caption="System record ID" Category="System Fields" Name="ID" />
+			<OutputField Name="KEYNAME" Caption="Constituent Name" DataType="String" />
+		</OutputFields>
+	</Output>
+  <RelationshipOperations>
+    <!--<AddRelatedView Field="ID" RelatedField="ID" DisplayAlias="Event" PathAlias="Designation" RelatedView="V_QUERY_DESIGNATION" />-->
+    <!--<CloneRelationships Source="V_QUERY_EVENT"  />-->
+    <CloneRelationships Source="V_QUERY_REVENUENOTE"  />
+  </RelationshipOperations>
+
+</QueryViewSpec>
+

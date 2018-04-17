@@ -1,0 +1,101 @@
+﻿<ReportSpec 
+	xmlns="bb_appfx_report"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="a395c6c1-12fc-4308-9269-63213ae5cbfa" 
+	Name="Revenue By Appeal Category Code Forcast Report"
+	Description="A report showing information about revenue by appeal category code forcast records"
+	Author="Abel C. Debela"
+	>
+
+	<RDLFileName>RevenueByAppealCategoryCodeForcast.rdl</RDLFileName>
+	<Folder>System Reports/Misc Reports</Folder>
+	
+	<DataRetrieval>
+		<CreateSQL ObjectName="dbo.USR_USP_REPORT_REVENUEBYAPPEALCATEGORYCODEFORCAST" ObjectType="SQLStoredProc">
+			<![CDATA[
+create procedure dbo.USR_USP_REPORT_REVENUEBYAPPEALCATEGORYCODEFORCAST
+(
+  @ID uniqueidentifier = null 
+)	
+
+as
+				
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate()
+  
+
+	
+  IF OBJECT_ID('tempdb..#FORECASTLIST') IS NOT NULL BEGIN DROP TABLE #FORECASTLIST END 
+SELECT * 
+INTO #FORECASTLIST
+FROM (
+SELECT 
+		RF.APPEALCATEGORYCODEID
+		,ACC.DESCRIPTION as APPEALCATEGORYCODEDISPLAY
+		,case RF.MONTHID
+			when 1 then 'MONTHJAN'
+			when 2 then 'MONTHFEB'
+			when 3 then 'MONTHMAR'
+			when 4 then 'MONTHAPR'
+			when 5 then 'MONTHMAY'
+			when 6 then 'MONTHJUN'
+			when 7 then 'MONTHJUL'
+			when 8 then 'MONTHAUG'
+			when 9 then 'MONTHSEP'
+			when 10 then 'MONTHOCT'
+			when 11 then 'MONTHNOV'
+			when 12 then 'MONTHDEC'
+			else 'MONTHUNKNOWN'
+		end as MONTHNM
+		,RF.EXPECTEDTOTALGIFTAMOUNT as EXPECTEDTOTALGIFTAMOUNT
+	FROM 
+		dbo.USR_REVENUECATEGORYBYAPPEALCODEFORECAST RF
+		INNER JOIN dbo.GLFISCALYEAR FY ON RF.GLFISCALYEARID = FY.ID
+		INNER JOIN APPEALCATEGORYCODE ACC ON RF.APPEALCATEGORYCODEID = ACC.ID
+	WHERE
+		FY.ID = @ID
+	
+) as SRC
+PIVOT
+(
+	SUM(EXPECTEDTOTALGIFTAMOUNT)
+	FOR MONTHNM IN ([MONTHJAN],	[MONTHFEB],	[MONTHMAR],	[MONTHAPR],	[MONTHMAY],	[MONTHJUN],	[MONTHJUL],	[MONTHAUG],	[MONTHSEP],	[MONTHOCT],	[MONTHNOV],	[MONTHDEC])
+) as DILI
+ 
+ 
+ --SELECT * FROM #FORECASTLIST  ORDER BY APPEALCATEGORYCODEDISPLAY 
+ 
+ --select * from #FORECASTLIST F
+ 
+ 
+ select 
+	*
+,MONTHJAN * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALJAN
+,MONTHFEB * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALFEB
+,MONTHMAR * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALMAR
+,MONTHAPR * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALAPR
+,MONTHMAY * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALMAY
+,MONTHJUN * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALJUN
+,MONTHJUL * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALJUL
+,MONTHAUG * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALAUG
+,MONTHSEP * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALSEP
+,MONTHOCT * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALOCT
+,MONTHNOV * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALNOV
+,MONTHDEC * (Round(RAND(CAST( NEWID() AS varbinary ))*100,2)/100)  as ACTUALDEC
+,0 as ORDERRAW
+  from 
+  #FORECASTLIST F
+
+
+			]]>
+		</CreateSQL>
+	</DataRetrieval>
+  <c:FormMetaData>
+    <c:FormFields>
+      <c:FormField FieldID="ID" Caption="Calendar Year" DataType="Guid">
+        <c:SimpleDataList SimpleDataListID="8BF288A8-7C0F-4213-8B15-474F5868712F" EnableTypeAhead="false" />
+      </c:FormField>
+    </c:FormFields>
+  </c:FormMetaData>
+</ReportSpec>
+

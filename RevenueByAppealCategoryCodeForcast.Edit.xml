@@ -1,0 +1,237 @@
+﻿<EditDataFormTemplateSpec 
+    xmlns="bb_appfx_editdataformtemplate"
+    xmlns:c="bb_appfx_commontypes"
+    ID="58dfabb6-92c8-44f2-8e2e-ac48d831bcfd"
+    Name="Revenue By Appeal Category Code Forcast Edit Data Form"
+    Description="A data form for editing revenue by appeal category code forcast records"
+    Author="Abel C. Debela"
+    DataFormInstanceID="09341e13-57f0-4909-9eb2-57684711208d"
+    RecordType="Revenue By Appeal Category Code Forcast"
+    c:SecurityUIFolder="Revenue By Appeal Category Code Forcast"
+    FormHeader="Edit a revenue by appeal category code forcast"
+    >
+
+	<SPDataForm>
+
+		<!-- define the edit load SP, which is used to load the data for the form -->
+		<LoadImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDITLOAD_REVENUEBYAPPEALCATEGORYCODEFORCAST">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDITLOAD_REVENUEBYAPPEALCATEGORYCODEFORCAST
+(
+    @ID uniqueidentifier,
+    @DATALOADED bit = 0 output,
+    @TSLONG bigint = 0 output,
+	  @FORECASTSTRING nvarchar(max) = null output,
+    @FORECASTDETAILS xml = null output
+)
+as
+
+	set nocount on;
+
+	-- be sure to set these, in case the select returns no rows
+	set @DATALOADED = 0
+	set @TSLONG = 0
+
+	-- populate the output parameters, which correspond to fields on the form.  Note that
+	-- we set @DATALOADED = 1 to indicate that the load was successful.  Otherwise, the system
+	-- will display a "no data loaded" message.  Also note that we fetch the TSLONG so that concurrency
+	-- can be considered.
+	select TOP 1
+		@DATALOADED = 1,
+		@TSLONG = TSLONG,
+		@FORECASTSTRING = 'abel'	
+	from dbo.USR_REVENUECATEGORYBYAPPEALCODEFORECAST
+	where GLFISCALYEARID = @ID
+  
+  IF OBJECT_ID('tempdb..#FORECASTLIST') IS NOT NULL BEGIN DROP TABLE #FORECASTLIST END 
+SELECT * 
+INTO #FORECASTLIST
+FROM (
+SELECT 
+		RF.APPEALCATEGORYCODEID
+		,ACC.DESCRIPTION as APPEALCATEGORYCODEDISPLAY
+		,case RF.MONTHID
+			when 1 then 'MONTHJAN'
+			when 2 then 'MONTHFEB'
+			when 3 then 'MONTHMAR'
+			when 4 then 'MONTHAPR'
+			when 5 then 'MONTHMAY'
+			when 6 then 'MONTHJUN'
+			when 7 then 'MONTHJUL'
+			when 8 then 'MONTHAUG'
+			when 9 then 'MONTHSEP'
+			when 10 then 'MONTHOCT'
+			when 11 then 'MONTHNOV'
+			when 12 then 'MONTHDEC'
+			else 'MONTHUNKNOWN'
+		end as MONTHNM
+		,RF.EXPECTEDTOTALGIFTAMOUNT as EXPECTEDTOTALGIFTAMOUNT
+	FROM 
+		dbo.USR_REVENUECATEGORYBYAPPEALCODEFORECAST RF
+		INNER JOIN dbo.GLFISCALYEAR FY ON RF.GLFISCALYEARID = FY.ID
+		INNER JOIN APPEALCATEGORYCODE ACC ON RF.APPEALCATEGORYCODEID = ACC.ID
+	WHERE
+		FY.ID = @ID
+	
+) as SRC
+PIVOT
+(
+	SUM(EXPECTEDTOTALGIFTAMOUNT)
+	FOR MONTHNM IN ([MONTHJAN],	[MONTHFEB],	[MONTHMAR],	[MONTHAPR],	[MONTHMAY],	[MONTHJUN],	[MONTHJUL],	[MONTHAUG],	[MONTHSEP],	[MONTHOCT],	[MONTHNOV],	[MONTHDEC])
+) as DILI
+  SELECT @FORECASTDETAILS = (SELECT * FROM #FORECASTLIST  ORDER BY APPEALCATEGORYCODEDISPLAY for xml raw('ITEM'),type,elements,root('FORECASTDETAILS'),BINARY BASE64)
+
+	return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</LoadImplementation>
+
+		<SaveImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDIT_REVENUEBYAPPEALCATEGORYCODEFORCAST">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDIT_REVENUEBYAPPEALCATEGORYCODEFORCAST 
+(
+	@ID uniqueidentifier,
+	@CHANGEAGENTID uniqueidentifier = null,
+	@FORECASTSTRING nvarchar(max) ,
+  @FORECASTDETAILS xml
+)
+as
+
+	set nocount on;
+
+	if @CHANGEAGENTID is null  
+		exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+				
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate()
+
+	begin try
+		-- handle updating the data
+    insert into dbo.debug (MESSAGE) VALUES (cast(@FORECASTDETAILS as nvarchar(max)));
+		Declare @ITEMLISTXML xml
+    select @ITEMLISTXML = cast(@FORECASTDETAILS as xml)
+    if @ID is null
+        set @ID = newid()
+    insert into dbo.debug(MESSAGE) values (@FORECASTSTRING)
+    if @CHANGEAGENTID is null  
+        exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+
+
+		IF OBJECT_ID(N'tempdb..#FORECASTRESULTS') IS NOT NULL
+			DROP TABLE #FORECASTRESULTS;
+
+		SELECT 
+			* 
+		INTO #FORECASTRESULTS
+		FROM (
+
+				select
+					T.c.value('(APPEALCATEGORYCODEID)[1]','uniqueidentifier') AS 'ID',
+					T.c.value('(MONTHJAN)[1]','nvarchar(255)') AS 'MONTHJAN',
+					T.c.value('(MONTHFEB)[1]','nvarchar(255)') AS 'MONTHFEB',
+					T.c.value('(MONTHMAR)[1]','nvarchar(255)') AS 'MONTHMAR',
+					T.c.value('(MONTHAPR)[1]','nvarchar(255)') AS 'MONTHAPR',
+					T.c.value('(MONTHMAY)[1]','nvarchar(255)') AS 'MONTHMAY',
+					T.c.value('(MONTHJUN)[1]','nvarchar(255)') AS 'MONTHJUN',
+					T.c.value('(MONTHJUL)[1]','nvarchar(255)') AS 'MONTHJUL',
+					T.c.value('(MONTHAUG)[1]','nvarchar(255)') AS 'MONTHAUG',
+					T.c.value('(MONTHSEP)[1]','nvarchar(255)') AS 'MONTHSEP',
+					T.c.value('(MONTHOCT)[1]','nvarchar(255)') AS 'MONTHOCT',
+					T.c.value('(MONTHNOV)[1]','nvarchar(255)') AS 'MONTHNOV',
+					T.c.value('(MONTHDEC)[1]','nvarchar(255)') AS 'MONTHDEC'
+				FROM @ITEMLISTXML.nodes('/FORECASTDETAILS/ITEM') T(c)
+				WHERE
+				T.c.value('(APPEALCATEGORYCODEID)[1]','uniqueidentifier') is not null -- Exclude totals
+			) ALLMONTHFORECAST
+
+		--SELECT * FROM #FORECASTRESULTS
+
+
+		Declare @FORCASTBYMONTH table (ID uniqueidentifier , MONTHID int, FORECASTAMOUNT money) -- Transform column to rows
+
+			insert into @FORCASTBYMONTH (ID, MONTHID, FORECASTAMOUNT)
+			select ID,1, ISNULL(MONTHJAN,0) from #FORECASTRESULTS UNION
+			select ID,2, ISNULL(MONTHFEB,0) from #FORECASTRESULTS UNION
+			select ID,3, ISNULL(MONTHMAR,0) from #FORECASTRESULTS UNION
+			select ID,4, ISNULL(MONTHAPR,0) from #FORECASTRESULTS UNION
+			select ID,5, ISNULL(MONTHMAY,0) from #FORECASTRESULTS UNION
+			select ID,6, ISNULL(MONTHJUN,0) from #FORECASTRESULTS UNION
+			select ID,7, ISNULL(MONTHJUL,0) from #FORECASTRESULTS UNION
+			select ID,8, ISNULL(MONTHAUG,0) from #FORECASTRESULTS UNION
+			select ID,9, ISNULL(MONTHSEP,0) from #FORECASTRESULTS UNION
+			select ID,10,ISNULL(MONTHOCT,0) from #FORECASTRESULTS UNION
+			select ID,11,ISNULL(MONTHNOV,0) from #FORECASTRESULTS UNION
+			select ID,12,ISNULL(MONTHDEC,0) from #FORECASTRESULTS
+		delete from dbo.USR_REVENUECATEGORYBYAPPEALCODEFORECAST WHERE GLFISCALYEARID = @ID
+		insert into dbo.USR_REVENUECATEGORYBYAPPEALCODEFORECAST (GLFISCALYEARID,APPEALCATEGORYCODEID, MONTHID, EXPECTEDTOTALGIFTAMOUNT, ADDEDBYID, CHANGEDBYID, DATEADDED, DATECHANGED)
+		select 
+			@ID as FISCALYEAR
+			, ID as APPEALCATEGORYCODEID
+			, MONTHID as MONTHID
+			, FORECASTAMOUNT as FORECASTAMOUNT
+			, @CHANGEAGENTID as ADDEDBYID
+			, @CHANGEAGENTID as CHANGEDBYID
+			, @CURRENTDATE as DATEADDED
+			, @CURRENTDATE as DATECHANGED
+		FROM 
+			@FORCASTBYMONTH 
+	end try
+	begin catch
+		exec dbo.USP_RAISE_ERROR
+		return 1
+	end catch
+
+return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</SaveImplementation>
+
+	</SPDataForm>
+
+	<!-- describe fields on the form, which correspond to parameters on the SP.  Note that system paramters 
+	like the record ID, DATALOADED, TSLONG, and CURRENTAPPUSERID need not be listed. -->
+	<FormMetaData xmlns="bb_appfx_commontypes">
+		<FormFields>
+      <FormField FieldID="FORECASTSTRING" Caption="Forcast string" DataType="String" MaxLength="0" Required="true" AllowNullValue="false" />
+      <FormField FieldID="FORECASTDETAILS" Caption="Revenue forecast by appeal category code" DataType="XML" Required="true">
+        <Collection>
+          <Fields>
+            <FormField FieldID="APPEALCATEGORYCODEID" DataType="Guid" Caption="Appeal Category Code" Hidden="true">
+              <CodeTable CodeTableName="APPEALCATEGORYCODE" IncludeInactive="false" />
+            </FormField>
+            <FormField FieldID="APPEALCATEGORYCODEDISPLAY" DataType="String" Caption="Category code" ReadOnly="true" />
+            <FormField FieldID="MONTHJAN" DataType="Decimal" Caption="Jan" DefaultValueText="0" />
+            <FormField FieldID="MONTHFEB" DataType="Decimal" Caption="Feb" DefaultValueText="0" />
+            <FormField FieldID="MONTHMAR" DataType="Decimal" Caption="Mar" DefaultValueText="0" />
+            <FormField FieldID="MONTHAPR" DataType="Decimal" Caption="Apr" DefaultValueText="0" />
+            <FormField FieldID="MONTHMAY" DataType="Decimal" Caption="May" DefaultValueText="0" />
+            <FormField FieldID="MONTHJUN" DataType="Decimal" Caption="Jun" DefaultValueText="0" />
+            <FormField FieldID="MONTHJUL" DataType="Decimal" Caption="Jul" DefaultValueText="0" />
+            <FormField FieldID="MONTHAUG" DataType="Decimal" Caption="Aug" DefaultValueText="0" />
+            <FormField FieldID="MONTHSEP" DataType="Decimal" Caption="Sep" DefaultValueText="0" />
+            <FormField FieldID="MONTHOCT" DataType="Decimal" Caption="Oct" DefaultValueText="0" />
+            <FormField FieldID="MONTHNOV" DataType="Decimal" Caption="Nov" DefaultValueText="0" />
+            <FormField FieldID="MONTHDEC" DataType="Decimal" Caption="Dec" DefaultValueText="0" />
+            <FormField FieldID="YEARTOTAL" DataType="Decimal" Caption="Total" DefaultValueText="0" />
+          </Fields>
+        </Collection>
+      </FormField>
+
+		</FormFields>
+
+    <WebUIComponent>
+      <UIModel AssemblyName="Blackbaud.CustomFx.RevenueByAppealCategory.dll" ClassName="Blackbaud.CustomFx.RevenueByAppealCategory.RevenueByAppealCategoryCodeForcastEditDataFormUIModel" />
+      <WebUI>
+        <ExternalResource Url="browser/htmlforms/custom/budgetvsactual/RevenueByAppealCategoryCodeForcastEditDataForm.html"/>
+      </WebUI>
+    </WebUIComponent>
+
+        
+
+        
+
+	</FormMetaData>
+
+</EditDataFormTemplateSpec>

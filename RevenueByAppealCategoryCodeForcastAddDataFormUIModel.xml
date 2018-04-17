@@ -1,0 +1,10 @@
+﻿<UIModelWizardMetadata>
+  <SpecFileName>RevenueByAppealCategoryCodeForcast.Add.xml</SpecFileName>
+  <Namespace></Namespace>
+  <ClassName>RevenueByAppealCategoryCodeForcastAddDataFormUIModel</ClassName>
+  <HtmlInfo GenerateHtml="true">
+    <HtmlFile>RevenueByAppealCategoryCodeForcastAddDataForm.html</HtmlFile>
+    <HtmlFolder>C:\ProgramNet\Catalog1VBNet\Catalog1VBNet\htmlfiles\custom\customconfigurationsetting</HtmlFolder>
+  </HtmlInfo>
+  <GenerateFromDatabase>true</GenerateFromDatabase>
+</UIModelWizardMetadata>

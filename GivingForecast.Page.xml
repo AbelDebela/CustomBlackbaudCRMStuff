@@ -1,0 +1,65 @@
+﻿<PageDefinitionSpec
+    xmlns="bb_appfx_pagedefinition" 
+    xmlns:c="bb_appfx_commontypes"
+    ID="fd31c7da-a00d-4263-8424-6454a7661d74"
+    Name="Giving Forecast Page"
+    Description="A page for displaying information about giving forecast records"
+    Author="Abel C. Debela"
+      ExpressionDataFormID="00000000-0000-0000-0000-000000000000"
+      ContextRecordType="Giving Forecast"
+    >
+    <PageHeader Caption="Giving projection forecast" />
+    <Tabs>
+      <Tab Caption="Giving projection" ID="e1251ca2-f170-41c8-aec0-7b3f54f0bac5">
+        <Sections>
+          <Section ID="f2826886-523f-4853-9d07-6f0fe269017e" Caption="Giving projection">
+            <DataList ID="0e80da25-a667-4b3e-8542-84639aeac4b7">
+              <RenderStyle>
+                <StandardView>
+                  <DetailViewForm ViewDataFormID="db1ca5f9-f2e4-41fe-97d0-d2b0a6bfdee2" />
+                </StandardView>
+              </RenderStyle>
+            </DataList>
+            <SectionContext>
+              <PageContextID xmlns="bb_appfx_commontypes" />
+            </SectionContext>
+            <Actions>
+              <Action ID="c9558881-8ef0-4cc8-9f35-e47e1767a30d" Caption="Add giving projection" Visible="= Fields!NEEDFORECAST = 0">
+                <ShowAddDataForm DataFormID="2b5fd8a8-c8cb-4d57-872e-d223695e5480" xmlns="bb_appfx_commontypes">
+                  <PostActionEvent>
+                    <RefreshSection />
+                  </PostActionEvent>
+                  <FormDefaultValues>
+                    <DefaultValue FieldID="GLFISCALYEARID">
+                      <Value>
+                        <SectionField>ID</SectionField>
+                      </Value>
+                    </DefaultValue>
+                  </FormDefaultValues>
+                </ShowAddDataForm>
+              </Action>
+              <Action ID="68f1c216-95c3-4389-b7ca-0660e454bf68" Caption="Edit giving projection" Visible="= Fields!NEEDFORECAST = 1">
+                <ShowDataForm DataFormID="09341e13-57f0-4909-9eb2-57684711208d" xmlns="bb_appfx_commontypes">
+                  <ActionContext>
+                    <SectionField>ID</SectionField>
+                  </ActionContext>
+                  <PostActionEvent>
+                    <RefreshSection />
+                  </PostActionEvent>
+                </ShowDataForm>
+              </Action>
+            </Actions>
+          </Section>
+        </Sections>
+      </Tab>
+    </Tabs>
+    <PageActionGroups>
+      <PageActionGroup ID="332341db-b045-4a93-90c9-94a8c69c9437" Caption="Giving projection">
+        <Actions>
+          <Action ID="b5a4601d-eeaf-4b93-ba57-9ec27539e1ed" Caption="Add Giving projection forecast">
+            <ShowAddDataForm DataFormID="2b5fd8a8-c8cb-4d57-872e-d223695e5480" xmlns="bb_appfx_commontypes" />
+          </Action>
+        </Actions>
+      </PageActionGroup>
+    </PageActionGroups>
+  </PageDefinitionSpec>

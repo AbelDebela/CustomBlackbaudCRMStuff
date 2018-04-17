@@ -1,0 +1,46 @@
+﻿<DataListSpec 
+	xmlns="bb_appfx_datalist"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="0e80da25-a667-4b3e-8542-84639aeac4b7" 
+	Name="Giving Forecast List Data List"
+	Description="A data list showing giving forecast list records." 
+	Author="Abel C. Debela"
+	c:SecurityUIFolder="Giving Forecast List"
+	>
+
+	<!-- define the SP that returns the data for the datalist -->
+	<SPDataList SPName="USR_USP_DATALIST_GIVINGFORECASTLIST">
+		<c:CreateProcedureSQL>
+			<![CDATA[
+create procedure dbo.USR_USP_DATALIST_GIVINGFORECASTLIST
+
+as
+	set nocount on;
+
+SELECT 
+	 GL.ID
+	, GL.YEARID
+	, GL.DESCRIPTION
+	, case when REVFORCAST.GLFISCALYEARID is null then 'No forecast data found' else 'Forecast already saved' end as FORECASTDATA
+	, case when REVFORCAST.GLFISCALYEARID is null then 0 else 1 end as NEEDFORECAST
+FROM GLFISCALYEAR GL
+LEFT JOIN (
+	SELECT DISTINCT GLFISCALYEARID FROM USR_REVENUECATEGORYBYAPPEALCODEFORECAST
+			) REVFORCAST ON GL.ID = REVFORCAST.GLFISCALYEARID
+			]]>
+		</c:CreateProcedureSQL>
+	</SPDataList>
+
+	<!-- describe the context ID parameter for the SP (if applicable)-->
+
+	<Output>
+		<OutputFields>
+			<OutputField FieldID="ID" Caption="ID" DataType="Guid" IsHidden="true" />
+			<OutputField FieldID="YEARID" Caption="Year" DataType="String" />
+			<OutputField FieldID="DESCRIPTION" Caption="Description" DataType="String" />
+			<OutputField FieldID="FORECASTDATA" Caption="Availability" DataType="String" />
+      <OutputField FieldID="NEEDFORECAST" Caption="Data Available" DataType="TinyInt" IsHidden="true" />
+		</OutputFields>
+	</Output>
+
+</DataListSpec>

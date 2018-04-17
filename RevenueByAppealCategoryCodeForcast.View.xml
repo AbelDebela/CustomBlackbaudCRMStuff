@@ -1,0 +1,121 @@
+﻿<ViewDataFormTemplateSpec 
+    xmlns="bb_appfx_viewdataformtemplate"
+    xmlns:c="bb_appfx_commontypes"
+    ID="7cd53815-3ca9-46cc-bc13-e43d9ef6469a"
+    Name="Revenue By Appeal Category Code Forcast View Data Form"
+    Description="A data form for viewing revenue by appeal category code forcast records"
+    Author="Abel C. Debela"
+    DataFormInstanceID="db1ca5f9-f2e4-41fe-97d0-d2b0a6bfdee2"
+    RecordType="Revenue By Appeal Category Code Forcast"
+    c:SecurityUIFolder="Revenue By Appeal Category Code Forcast"
+    >
+
+	<!-- define the SP that returns the data used by the form -->
+	<SPDataForm SPName="USR_USP_DATAFORMTEMPLATE_VIEW_REVENUEBYAPPEALCATEGORYCODEFORCAST">
+		<c:CreateProcedureSQL>
+			<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_VIEW_REVENUEBYAPPEALCATEGORYCODEFORCAST
+(
+	@ID uniqueidentifier,
+	@DATALOADED bit = 0 output,
+	@FORECASTDETAILS xml = null output
+)
+as
+	set nocount on;
+	
+	-- be sure to set this, in case the select returns no rows
+
+				
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate()
+  
+	set @DATALOADED = 0;
+	
+  IF OBJECT_ID('tempdb..#FORECASTLIST') IS NOT NULL BEGIN DROP TABLE #FORECASTLIST END 
+SELECT * 
+INTO #FORECASTLIST
+FROM (
+SELECT 
+		RF.APPEALCATEGORYCODEID
+		,ACC.DESCRIPTION as APPEALCATEGORYCODEDISPLAY
+		,case RF.MONTHID
+			when 1 then 'MONTHJAN'
+			when 2 then 'MONTHFEB'
+			when 3 then 'MONTHMAR'
+			when 4 then 'MONTHAPR'
+			when 5 then 'MONTHMAY'
+			when 6 then 'MONTHJUN'
+			when 7 then 'MONTHJUL'
+			when 8 then 'MONTHAUG'
+			when 9 then 'MONTHSEP'
+			when 10 then 'MONTHOCT'
+			when 11 then 'MONTHNOV'
+			when 12 then 'MONTHDEC'
+			else 'MONTHUNKNOWN'
+		end as MONTHNM
+		,RF.EXPECTEDTOTALGIFTAMOUNT as EXPECTEDTOTALGIFTAMOUNT
+	FROM 
+		dbo.USR_REVENUECATEGORYBYAPPEALCODEFORECAST RF
+		INNER JOIN dbo.GLFISCALYEAR FY ON RF.GLFISCALYEARID = FY.ID
+		INNER JOIN APPEALCATEGORYCODE ACC ON RF.APPEALCATEGORYCODEID = ACC.ID
+	WHERE
+		FY.ID = @ID
+	
+) as SRC
+PIVOT
+(
+	SUM(EXPECTEDTOTALGIFTAMOUNT)
+	FOR MONTHNM IN ([MONTHJAN],	[MONTHFEB],	[MONTHMAR],	[MONTHAPR],	[MONTHMAY],	[MONTHJUN],	[MONTHJUL],	[MONTHAUG],	[MONTHSEP],	[MONTHOCT],	[MONTHNOV],	[MONTHDEC])
+) as DILI
+ SELECT @FORECASTDETAILS = (SELECT * FROM #FORECASTLIST  ORDER BY APPEALCATEGORYCODEDISPLAY for xml raw('ITEM'),type,elements,root('FORECASTDETAILS'),BINARY BASE64)
+	-- populate the output parameters, which correspond to fields on the form.  Note that
+	-- we set @DATALOADED = 1 to indicate that the load was successful.  Otherwise, the system
+	-- will display a "no data loaded" message.
+	select @DATALOADED = 1,
+		   @FORECASTDETAILS = @FORECASTDETAILS
+	
+	return 0;
+			]]>
+		</c:CreateProcedureSQL>
+	</SPDataForm>
+
+	<!-- describe fields on the form, which correspond to parameters on the SP.  Note that system paramters 
+	like the context @ID, @DATALOADED, and @CURRENTAPPUSERID need not be listed. -->
+	<FormMetaData xmlns="bb_appfx_commontypes">
+		<FormFields>
+      <FormField FieldID="FORECASTDETAILS" Caption="Revenue forecast by appeal category code" DataType="XML" Required="true">
+        <Collection>
+          <Fields>
+            <FormField FieldID="APPEALCATEGORYCODEID" DataType="Guid" Caption="Appeal Category Code" Hidden="true">
+              <CodeTable CodeTableName="APPEALCATEGORYCODE" IncludeInactive="false" />
+            </FormField>
+            <FormField FieldID="APPEALCATEGORYCODEDISPLAY" DataType="String" Caption="Category code" ReadOnly="true" />
+            <FormField FieldID="MONTHJAN" DataType="Money" Caption="Jan" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHFEB" DataType="Money" Caption="Feb" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHMAR" DataType="Money" Caption="Mar" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHAPR" DataType="Money" Caption="Apr" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHMAY" DataType="Money" Caption="May" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHJUN" DataType="Money" Caption="Jun" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHJUL" DataType="Money" Caption="Jul" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHAUG" DataType="Money" Caption="Aug" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHSEP" DataType="Money" Caption="Sep" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHOCT" DataType="Money" Caption="Oct" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHNOV" DataType="Money" Caption="Nov" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="MONTHDEC" DataType="Money" Caption="Dec" DefaultValueText="0" ReadOnly="true" />
+            <FormField FieldID="YEARTOTAL" DataType="Money" Caption="Total" DefaultValueText="0" ReadOnly="true" />
+          </Fields>
+        </Collection>
+      </FormField>
+		</FormFields>
+
+        <WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFx.RevenueByAppealCategory.dll" ClassName="Blackbaud.CustomFx.RevenueByAppealCategory.RevenueByAppealCategoryCodeForcastViewDataFormUIModel" />
+            <WebUI>
+                <DefaultWebUI />
+            </WebUI>
+        </WebUIComponent>
+
+        
+	</FormMetaData>
+
+</ViewDataFormTemplateSpec>

@@ -1,0 +1,16 @@
+﻿
+<TaskSpec
+	xmlns="bb_appfx_task"
+	xmlns:c="bb_appfx_commontypes" 
+
+    ID="89c935c6-d8a5-459f-8db6-56522470f45a"
+    Name="Gift forecast by appeal category"
+    Description="Gift forecast by appeal category"
+    Author="SILASG\adebela"
+    ImageKey="RES:tablespec"
+    FunctionalAreaID="97841af8-a469-40ed-a9f3-633a95a99c02"
+    Sequence="0"
+
+    >
+  <ShowPage PageID="b40c969f-f0ea-42a5-8583-603344be8b7f" TabID="00000000-0000-0000-0000-000000000000" SectionID="00000000-0000-0000-0000-000000000000" xmlns="bb_appfx_commontypes" />
+</TaskSpec>

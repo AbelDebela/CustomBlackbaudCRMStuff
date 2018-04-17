@@ -1,0 +1,24 @@
+﻿<SimpleDataListSpec
+	xmlns="bb_appfx_simpledatalist"
+	xmlns:c="bb_appfx_commontypes"
+	ID="8bf288a8-7c0f-4213-8b15-474f5868712f"
+	Name="Fiscal Year Simple Data List"
+	Description="A simple data list that returns fiscal year records"
+	Author="Abel C. Debela"
+	>
+
+	<SPSimpleList SPName="USR_USP_SIMPLEDATALIST_FISCALYEAR">
+		<c:CreateProcedureSQL >
+			<![CDATA[
+create procedure dbo.USR_USP_SIMPLEDATALIST_FISCALYEAR as
+	select 
+		ID as VALUE, 
+		YEARID as LABEL
+	from dbo.GLFISCALYEAR
+	order by
+		YEARID 
+			]]>
+		</c:CreateProcedureSQL>
+	</SPSimpleList>
+
+</SimpleDataListSpec>
